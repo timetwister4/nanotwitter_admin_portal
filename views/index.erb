@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+      <%=yield_content :head%>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+    <!-- Bootstrap -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+     body {
+       background-color: skyblue;
+     }
+     h1 {
+       text-align: center;
+       color: white;
+       font-weight: bold;
+     }
+   </style>
+
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  </head>
+  <body>
+    <div class="row">
+      <div class="col-md col-md-offset-3">
+        <div class="page-header">
+          <h1> Admin Portal </h1>
+        </div>
+        Resets
+        <a class="btn btn-primary" href="/test/reset/standard"> Reset and Seed </a>
+        <br>
+        <a class="btn btn-primary" href="/test/reset/testuser"> Reset the TestUser</a>
+        <br>
+        <a class="btn btn-primary" href="test/reset/all"> Simple Reset </a>
+        <br>
+        <a href="/test/status"> Check test status </a>
+
+    <script src="/js/follows.js" type="text/javascript"></script>
+
+    <script src="/js/liking.js" type="text/javascript"></script>
+
+    <script src="/js/replying.js" type="text/javascript"></script>
+    <!-- jQuery via Google + local fallback -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
+
+    <!--Bootstrap jQuery Plugins, compiled and minified -->
+    <script src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
