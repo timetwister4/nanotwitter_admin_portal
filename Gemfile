@@ -7,6 +7,7 @@ gem 'redis'
 gem 'redis-namespace'
 
 gem 'faker'
+gem 'bcrypt'
 
 group :development, :test do
   gem 'rake'
