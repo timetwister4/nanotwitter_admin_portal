@@ -62,15 +62,14 @@ def seed_follows
 
   user = User.first
   start_index = user.id - 1
-
   CSV.foreach('./seed_data/follows.csv') do |row|
-
     if row[0].to_i + start_index != user.id
       user = User.find(row[0].to_i + start_index)
     end
 
     user.increment_followings
     user.save
+
     followed_user = User.find(row[1].to_i + start_index)
     followed_user.increment_followers
     followed_user.save
