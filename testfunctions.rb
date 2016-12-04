@@ -33,7 +33,7 @@ def perform_test
 end
 
 def seed_users
-  CSV.foreach('./mock_seed_data/users.csv') do |row|
+  CSV.foreach('./seed_data/users.csv') do |row|
     User.create(name: row[1], email: "#{row[1]}@cosi105b.gov", user_name: row[1], password: "123")
   end
 end
@@ -42,9 +42,6 @@ def seed_tweets
   user = User.first
   start_index = user.id - 1
   CSV.foreach('./seed_data/tweets.csv') do |row|
-    if row[0].to_i > 4
-      break
-    else
     if row[0].to_i + start_index  != user.id
       user = User.find(row[0].to_i + start_index)
     end
@@ -52,7 +49,6 @@ def seed_tweets
     user.increment_tweets
     user.save
     RedisClass.cache_tweet(t, user.id, t.id)
-  end
   end
 end
 
@@ -67,7 +63,7 @@ def seed_follows
   user = User.first
   start_index = user.id - 1
 
-  CSV.foreach('./mock_seed_data/follows.csv') do |row|
+  CSV.foreach('./seed_data/follows.csv') do |row|
 
     if row[0].to_i + start_index != user.id
       user = User.find(row[0].to_i + start_index)
