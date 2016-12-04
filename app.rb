@@ -36,6 +36,7 @@ get '/test/reset/standard' do
       seed_users
       seed_follows
       seed_tweets
+      seed_front_page
     }
   redirect '/test/status'
 end

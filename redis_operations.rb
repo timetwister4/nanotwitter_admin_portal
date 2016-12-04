@@ -11,18 +11,18 @@ class RedisClass
 	def self.cache_follow(user_id, person_followed)
 		$redis.sadd("user:#{user_id}:followings", person_followed)
 		$redis.sadd("user:#{person_followed}:followers", user_id)
-		byebug
 	end
 
 	def self.cache_unfollow(user_id, person_unfollowed)
 		$redis.srem("user:#{user_id}:followings", person_unfollowed)
 		$redis.srem("user:#{person_unfollowed}:followers", user_id)
-		byebug
 	end
 
 
 	def self.cache_tweet(tweet,user_id, tweet_id)
 		$redis.sadd("tweet:#{tweet_id}", tweet.to_json)
+		#experiment line
+		$redis.lpush("ffeed", tweet.to_json)
 		$redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
 		followers = []
 		#if the cache is empty, check the database
@@ -55,7 +55,6 @@ class RedisClass
 	def self.cache_tags(tag_names, tweet)
 		tag_names do |name|
 			$redis.rpush("tag:#{name}", tweet.to_json)
-
 		end
 
 	end
@@ -71,13 +70,21 @@ class RedisClass
 
 	def self.access_pfeed(u_id)
 		$redis.lrange("user:#{u_id}:pfeed", 0, -1) #return the unparsed tweets of your nt profile
-
 	end
 
+	def self.load_ffeed (tweets)
+		self.delete_ffeed
+		tweets.each do |tweet|
+			$redis.rpush("ffeed", tweet.to_json)
+		end
+	end
+	#experiment
+	def self.access_ffeed
+		$redis.lrange("ffeed", 0, 7)
+	end
 	#access the ids of all the people that the person with the given id (u_id) follows
 	def self.access_followings(u_id)
 		$redis.smembers("user:#{u_id}:followings")
-
 	end
 	#access the ids of all the people that follow the person with the given id (u_id)
 	def self.access_followers(u_id)
@@ -86,13 +93,13 @@ class RedisClass
 
 	def self.access_hfeed(u_id)
 	    $redis.lrange("user:#{u_id}:hfeed",0, -1) #returns the unparsed tweets (in json format)
-
 	end
+
 
 	def self.access_tag(name)
 		$redis.lrange("tag:#{name}", 0, -1)
-
 	end
+
 
 	def self.access_replies(tweet_id)
 		$redis.lrange("tweet:#{tweet_id}:replies", 0, -1)
@@ -100,7 +107,6 @@ class RedisClass
 
 	def self.access_likes(tweet_id)
 		$redis.smembers("tweet:#{tweet_id}:likes")
-
 	end
 
 	def self.number_of_keys
@@ -118,11 +124,15 @@ class RedisClass
 		$redis.del("user:#{id}:followers")
 	end
 
+	def self.delete_ffeed
+		$redis.del("ffeed")
+	end
+
 	def self.delete_user_from_follows(id)
 		users = User.all
 		users.each do |u|
-			followers = $redis.smembers("user:#{u.id}:followers")
-			followings = $redis.smembers("user:#{u.id}:followings")
+			followers = $redis.smembers("user:#{u[0].id}:followers")
+			followings = $redis.smembers("user:#{u[0].id}:followings")
 			followers.delete(id)
 			followings.delete(id)
 		end

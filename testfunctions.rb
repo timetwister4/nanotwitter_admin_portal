@@ -33,36 +33,55 @@ def perform_test
 end
 
 def seed_users
-  CSV.foreach('./seed_data/users.csv') do |row|
-    User.create(id: row[0].to_i, name: row[1], email: "#{row[1]}@cosi105b.gov", user_name: row[1], password: "123")
+  CSV.foreach('./mock_seed_data/users.csv') do |row|
+    User.create(name: row[1], email: "#{row[1]}@cosi105b.gov", user_name: row[1], password: "123")
   end
 end
 
 def seed_tweets
-  user = User.all[0]
+  user = User.first
+  start_index = user.id - 1
   CSV.foreach('./seed_data/tweets.csv') do |row|
-    if row[0].to_i != user.id
-      user = User.where(id: row[0].to_i)[0]
+    if row[0].to_i > 4
+      break
+    else
+    if row[0].to_i + start_index  != user.id
+      user = User.find(row[0].to_i + start_index)
     end
-    Tweet.create(author_id: row[0].to_i, author_name: user[:name], text: row[1], created_at: row[2])
+    t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
     user.increment_tweets
     user.save
+    RedisClass.cache_tweet(t, user.id, t.id)
+  end
   end
 end
 
+def seed_front_page
+  RedisClass.delete_ffeed
+  front = Tweet.order(created_at: :desc).first(7)
+  RedisClass.load_ffeed(front)
+end
+
 def seed_follows
-  user = User.all[0]
-  CSV.foreach('./seed_data/follows.csv') do |row|
-    if row[0].to_i != user.id
-      user = User.where(id: row[0])[0]
+
+  user = User.first
+  start_index = user.id - 1
+
+  CSV.foreach('./mock_seed_data/follows.csv') do |row|
+
+    if row[0].to_i + start_index != user.id
+      user = User.find(row[0].to_i + start_index)
     end
 
     user.increment_followings
     user.save
-    followed_user = User.where(id: row[1].to_i)[0]
+    followed_user = User.find(row[1].to_i + start_index)
     followed_user.increment_followers
     followed_user.save
-    Follow.create(follower_id: row[0].to_i, followed_id: row[1].to_i)
+
+    Follow.create(follower_id: row[0].to_i + start_index, followed_id: row[1].to_i + start_index)
+    RedisClass.cache_follow(user.id, followed_user.id)
+
   end
 end
 
