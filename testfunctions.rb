@@ -43,7 +43,7 @@ def seed_tweets
   start_index = user.id - 1
   tweet_count = 0
   CSV.foreach('./seed_data/tweets.csv') do |row|
-    if tweet_count >= 8000
+    if tweet_count >= 5000
       break
     else
       if row[0].to_i + start_index  != user.id
