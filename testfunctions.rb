@@ -41,13 +41,19 @@ end
 def seed_tweets
   user = User.first
   start_index = user.id - 1
+  tweet_count = 0
   CSV.foreach('./seed_data/tweets.csv') do |row|
-    if row[0].to_i + start_index  != user.id
-      user = User.find(row[0].to_i + start_index)
+    if tweet_count >= 8000
+      break
+    else
+      if row[0].to_i + start_index  != user.id
+        user = User.find(row[0].to_i + start_index)
+      end
+      t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
+      user.increment_tweets
+      user.save
+      tweet_count += 1
     end
-    t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
-    user.increment_tweets
-    user.save
   end
 end
 
