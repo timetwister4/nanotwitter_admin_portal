@@ -48,15 +48,9 @@ def seed_tweets
     t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
     user.increment_tweets
     user.save
-    RedisClass.cache_tweet(t, user.id, t.id)
   end
 end
 
-def seed_front_page
-  RedisClass.delete_ffeed
-  front = Tweet.order(created_at: :desc).first(7)
-  RedisClass.load_ffeed(front)
-end
 
 def seed_follows
 

@@ -89,7 +89,7 @@ class RedisClass
 		ids = $redis.lrange("ffeed", 0, 7)
 		tweets = []
 		ids.each do |id|
-			tweet = $reds.smembers("tweet:#{id}")
+			tweet = $redis.smembers("tweet:#{id}")
 			tweets.push(tweet)
 		end
 		return tweets

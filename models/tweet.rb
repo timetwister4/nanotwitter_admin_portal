@@ -5,6 +5,7 @@ class Tweet <ActiveRecord::Base
 
   validates :text, presence: true, length: { maximum: 140 }
   validates :author, presence: true
+  validates :author_name, presence: true
 
   after_initialize :set_default_values
 

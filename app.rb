@@ -5,7 +5,8 @@ require 'byebug'
 require_relative 'testfunctions.rb'
 require_relative 'config/environments'
 require_relative 'config/initializers/redis'
-require_relative 'redis_operations.rb'
+#require_relative 'redis_operations.rb'
+require_relative 'RedisClass.rb'
 
 use Rack::Auth::Basic, "Protected Area" do |username, password|
   username == 'admin' && password == ENV['ADMIN_PASS']
@@ -36,7 +37,6 @@ get '/test/reset/standard' do
       seed_users
       seed_follows
       seed_tweets
-      seed_front_page
     }
   redirect '/test/status'
 end
