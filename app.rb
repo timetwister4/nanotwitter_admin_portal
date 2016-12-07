@@ -6,7 +6,7 @@ require_relative 'testfunctions.rb'
 require_relative 'config/environments'
 require_relative 'config/initializers/redis'
 #require_relative 'redis_operations.rb'
-require_relative 'RedisClass.rb'
+require_relative 'redis_operations.rb'
 
 use Rack::Auth::Basic, "Protected Area" do |username, password|
   username == 'admin' && password == ENV['ADMIN_PASS']

@@ -1,5 +1,6 @@
 require 'csv'
 require 'faker'
+require 'RedisClass'
 
 Dir["models/*.rb"].each {|file| require_relative file }
 
@@ -40,44 +41,76 @@ end
 
 def seed_tweets
   user = User.first
-  start_index = user.id - 1
-  tweet_count = 0
+  user_id = user.id
+  tweets_per_user = 0
+  row_num = 1
   CSV.foreach('./seed_data/tweets.csv') do |row|
-    if tweet_count >= 5000
-      break
-    else
-      if row[0].to_i + start_index  != user.id
-        user = User.find(row[0].to_i + start_index)
-      end
-      t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
-      user.increment_tweets
-      user.save
-      tweet_count += 1
+    if row_num != row[0].to_i
+       increase = row[0].to_i - row_num
+       tweets_per_user = 0
+       user_id += increase   
+       row_num = row[0].to_i
+       user = User.find(user_id)
+    elsif tweets_per_user < 12 
+      t = Tweet.create(author_id: user_id, author_name: user[:name], text: row[1], created_at: row[2])
+      t.save
+      tweet = [user[:name], row[1], row[2], t.id]
+      RedisClass.cache_tweet(tweet,user_id,t.id)
+      tweets_per_user += 1
     end
   end
+
+  #   if tweet_count >= 8000
+  #     break
+  #   else
+  #     if row[0].to_i + start_index  != user.id
+  #       user = User.find(row[0].to_i + start_index)
+  #     end
+  #     t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
+  #     user.increment_tweets
+  #     user.save
+  #     tweet_count += 1
+  #   end
+  # end
 end
 
 
 def seed_follows
-
   user = User.first
-  start_index = user.id - 1
+  user_id = user.id
+  row_num = 1
   CSV.foreach('./seed_data/follows.csv') do |row|
-    if row[0].to_i + start_index != user.id
-      user = User.find(row[0].to_i + start_index)
+    if row_num != row[0].to_i
+      increase = row[0].to_i - row_num
+      user_id += increase
+      row_num = row[0].to_i
+      User.find(user_id)
+    else
+      diff = (row[1].to_i - row[0].to_i).abs
+      row[1].to_i > row[0].to_i ? f_id = user_id + diff : f_id = user_id - diff
+      Follow.create(follower_id: user_id, followed_id: f_id)
+      RedisClass.cache_follow(user_id, f_id)
     end
 
-    user.increment_followings
-    user.save
-
-    followed_user = User.find(row[1].to_i + start_index)
-    followed_user.increment_followers
-    followed_user.save
-
-    Follow.create(follower_id: row[0].to_i + start_index, followed_id: row[1].to_i + start_index)
-    RedisClass.cache_follow(user.id, followed_user.id)
-
   end
+  # user = User.first
+  # start_index = user.id - 1
+  # CSV.foreach('./seed_data/follows.csv') do |row|
+  #   if row[0].to_i + start_index != user.id
+  #     user = User.find(row[0].to_i + start_index)
+  #   end
+
+  #   #user.increment_followings
+  #   user.save
+
+  #   followed_user = User.find(row[1].to_i + start_index)
+  #   followed_user.increment_followers
+  #   followed_user.save
+
+  #   Follow.create(follower_id: row[0].to_i + start_index, followed_id: row[1].to_i + start_index)
+  #   RedisClass.cache_follow(user.id, followed_user.id)
+
+ 
 end
 
 def reset_all
