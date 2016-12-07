@@ -1,6 +1,6 @@
 require 'csv'
 require 'faker'
-require 'RedisClass'
+require_relative 'redis_operations.rb'
 
 Dir["models/*.rb"].each {|file| require_relative file }
 

@@ -28,7 +28,7 @@ class RedisClass
 			$redis.lpush("user:#{following}:hfeed", tweet_id)
 		end
 	end
-	
+
 
 	def self.access_pfeed(u_id)
 		ids = $redis.lrange("user:#{u_id}:pfeed", 0, -1) #return the unparsed tweets of your nt profile
@@ -121,7 +121,7 @@ class RedisClass
 	# 		tweets.push(tweet)
 	# 	end
 	# 	return tweets
-	end
+
 	#access the ids of all the people that the person with the given id (u_id) follows
 	def self.access_followings(u_id)
 		$redis.smembers("user:#{u_id}:followings")
