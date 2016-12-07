@@ -89,7 +89,6 @@ class RedisClass
   end
 
   def self.access_hfeed(user_id)
-    byebug
     hfeed = $redis.lrange("user:#{user_id}:hfeed", 0, -1)
     if hfeed == []
       hfeed = self.load_hfeed(user_id)
@@ -101,7 +100,6 @@ class RedisClass
   def self.load_hfeed(user_id)
     follows = self.access_followings(user_id)
     tweets = Tweet.where(author_id: follows).order(created_at: :desc).first(50)
-    byebug
     tweets.each do |tweet|
       $redis.rpush("user:#{user_id}:hfeed", tweet.to_json)
     end
