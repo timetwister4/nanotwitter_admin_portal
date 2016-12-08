@@ -40,41 +40,6 @@ def seed_users
   end
 end
 
-def seed_tweets
-  user = User.first
-  user_id = user.id
-  tweets_per_user = 0
-  row_num = 1
-  CSV.foreach('./seed_data/tweets.csv') do |row|
-    if row_num != row[0].to_i
-       increase = row[0].to_i - row_num
-       tweets_per_user = 0
-       user_id += increase   
-       row_num = row[0].to_i
-       user = User.find(user_id)
-    elsif tweets_per_user < 12 
-      t = Tweet.create(author_id: user_id, author_name: user[:name], text: row[1], created_at: row[2])
-      t.save
-      tweet = [user[:name], row[1], row[2], t.id]
-      RedisClass.cache_tweet(tweet,user_id,t.id)
-      tweets_per_user += 1
-    end
-  end
-
-  #   if tweet_count >= 8000
-  #     break
-  #   else
-  #     if row[0].to_i + start_index  != user.id
-  #       user = User.find(row[0].to_i + start_index)
-  #     end
-  #     t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
-  #     user.increment_tweets
-  #     user.save
-  #     tweet_count += 1
-  #   end
-  # end
-end
-
 
 def seed_follows
   user = User.first
@@ -111,8 +76,45 @@ def seed_follows
   #   Follow.create(follower_id: row[0].to_i + start_index, followed_id: row[1].to_i + start_index)
   #   RedisClass.cache_follow(user.id, followed_user.id)
 
- 
 end
+
+def seed_tweets
+  user = User.first
+  user_id = user.id
+  tweets_per_user = 0
+  row_num = 1
+  CSV.foreach('./seed_data/tweets.csv') do |row|
+    if row_num != row[0].to_i
+       increase = row[0].to_i - row_num
+       tweets_per_user = 0
+       user_id += increase   
+       row_num = row[0].to_i
+       user = User.find(user_id)
+    elsif tweets_per_user < 12 
+      t = Tweet.create(author_id: user_id, author_name: user[:name], text: row[1], created_at: row[2])
+      t.save
+      tweet = [user[:name], row[1], row[2], t.id]
+      RedisClass.cache_tweet(tweet,user_id,t.id)
+      tweets_per_user += 1
+    end
+  end
+
+  #   if tweet_count >= 8000
+  #     break
+  #   else
+  #     if row[0].to_i + start_index  != user.id
+  #       user = User.find(row[0].to_i + start_index)
+  #     end
+  #     t = Tweet.create(author_id: user.id, author_name: user[:name], text: row[1], created_at: row[2])
+  #     user.increment_tweets
+  #     user.save
+  #     tweet_count += 1
+  #   end
+  # end
+end
+
+
+
 
 def reset_all
   reset_all_database

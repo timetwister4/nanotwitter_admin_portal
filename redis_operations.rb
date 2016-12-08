@@ -10,7 +10,7 @@ class RedisClass
 
 	def self.cache_follow(follower_id, person_followed)
 		$redis.sadd("user:#{follower_id}:followings", person_followed)
-		$redis.sadd("user:#{person_followed}:followers", user_id)
+		$redis.sadd("user:#{person_followed}:followers", follower_id)
 	end
 
 	# def self.cache_unfollow(follower_id, person_unfollowed)
