@@ -13,7 +13,8 @@ def get_status
   users = User.all.count
   tweets = Tweet.all.count
   follows = Follow.all.count
-  {:time => time, :users => users, :tweets => tweets, :follows => follows}
+  redis =  RedisClass.number_of_keys
+  {:time => time, :users => users, :tweets => tweets, :follows => follows, :redis => redis}
 end
 
 def reset_all_database

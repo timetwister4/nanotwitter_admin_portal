@@ -10,45 +10,29 @@ class RedisClass
 
 	def self.cache_follow(follower_id, person_followed)
 		$redis.sadd("user:#{follower_id}:followings", person_followed)
-		#$redis.sadd("user:#{person_followed}:followers", user_id)
+		$redis.sadd("user:#{person_followed}:followers", user_id)
 	end
 
-	def self.cache_unfollow(follower_id, person_unfollowed)
-		$redis.srem("user:#{follower_id}:followings", person_unfollowed)
-		#$redis.srem("user:#{person_unfollowed}:followers", user_id)
-	end
-
+	# def self.cache_unfollow(follower_id, person_unfollowed)
+	# 	$redis.srem("user:#{follower_id}:followings", person_unfollowed)
+	# 	$redis.srem("user:#{person_unfollowed}:followers", user_id)
+	# end
 
 
 	def self.cache_tweet(tweet,user_id, tweet_id)
-		$redis.sadd("tweet:#{tweet_id}", tweet.to_json)
-		$redis.lpush("user:#{user_id}:pfeed", tweet_id) #cache tweet for self
+		#$redis.sadd("tweet:#{tweet_id}", tweet.to_json)
+		if $redis.lrange("ffeed", 0, -1).length == 50
+		   $redis.rpop("ffeed")
+		   $redis.lpush("ffeed", tweet.to_json)
+		else
+		   $redis.lpush("ffeed", tweet.to_json)
+		end
+		$redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
 		followings = $redis.smembers("user:#{user_id}followings")
 		followings.each do |following|
-			$redis.lpush("user:#{following}:hfeed", tweet_id)
+			$redis.lpush("user:#{following}:hfeed", tweet.to_json)
 		end
 	end
-
-
-	def self.access_pfeed(u_id)
-		ids = $redis.lrange("user:#{u_id}:pfeed", 0, -1) #return the unparsed tweets of your nt profile
-		tweets = []
-		ids.each do |id|
-		 	$redis.smembers("tweet:#{id}")
-		 	tweets.push(tweet)
-	    end
-			
-	end
-
-	def self.access_hfeed(u_id)
-		ids = $redis.lrange("user:#{u_id}:hfeed", 0, -1) #return the unparsed tweets of your nt profile
-		tweets = []
-		ids.each do |id|
-			 tweets.push($redis.smembers("tweet:#{id}"))
-		end
-		return tweets
-	end
-
 	
 	def self.number_of_keys
 		$redis.dbsize
@@ -65,6 +49,29 @@ class RedisClass
 		$redis.del("user:#{id}:followers")
 	end
 
+	
+
+	# def self.access_pfeed(u_id)
+	# 	$redis.lrange("user:#{u_id}:pfeed", 0, -1) #return the unparsed tweets of your nt profile
+	# 	# tweets = []
+	# 	# ids.each do |id|
+	# 	#  	$redis.smembers("tweet:#{id}")
+	# 	#  	tweets.push(tweet)
+	#  #    end
+			
+	# end
+
+	# def self.access_hfeed(u_id)
+	# 	$redis.lrange("user:#{u_id}:hfeed", 0, -1) #return the unparsed tweets of your nt profile
+	# 	# tweets = []
+	# 	# ids.each do |id|
+	# 	# 	 tweets.push($redis.smembers("tweet:#{id}"))
+	# 	# end
+	# 	# return tweets
+	# end
+
+
+
 
 	#************non-load testing pursposes **************#
 
@@ -77,31 +84,31 @@ class RedisClass
 
 
 
-	def self.cache_reply(reply, tweet_id)
-		$redis.rpush("tweet:#{tweet_id}:replies", reply.to_json)
-	end
+	# def self.cache_reply(reply, tweet_id)
+	# 	$redis.rpush("tweet:#{tweet_id}:replies", reply.to_json)
+	# end
 
-	def self.cache_mentions(users_ids, tweet)
-		users_ids.each do |id|
-			$redis.rpush("user:#{id}:mentions", tweet.to_json)
-		end
+	# def self.cache_mentions(users_ids, tweet)
+	# 	users_ids.each do |id|
+	# 		$redis.rpush("user:#{id}:mentions", tweet.to_json)
+	# 	end
 
-	end
+	# end
 
-	def self.cache_tags(tag_names, tweet)
-		tag_names do |name|
-			$redis.rpush("tag:#{name}", tweet.to_json)
-		end
+	# def self.cache_tags(tag_names, tweet)
+	# 	tag_names do |name|
+	# 		$redis.rpush("tag:#{name}", tweet.to_json)
+	# 	end
 
-	end
+	# end
 
-	def self.cache_likes(t_id, u_id, t) #we need to store likes so that a user cannot like the tweet two times
-	    if $redis.sismember("tweet:#{t_id}:likes", u_id) == false
-				$redis.sadd("tweet:#{t_id}:likes", u_id)
-				t.increase_likes
-				return true
-			end
-	end
+	# def self.cache_likes(t_id, u_id, t) #we need to store likes so that a user cannot like the tweet two times
+	#     if $redis.sismember("tweet:#{t_id}:likes", u_id) == false
+	# 			$redis.sadd("tweet:#{t_id}:likes", u_id)
+	# 			t.increase_likes
+	# 			return true
+	# 		end
+	# end
 
 
 	
@@ -123,29 +130,29 @@ class RedisClass
 	# 	return tweets
 
 	#access the ids of all the people that the person with the given id (u_id) follows
-	def self.access_followings(u_id)
-		$redis.smembers("user:#{u_id}:followings")
-	end
-	#access the ids of all the people that follow the person with the given id (u_id)
-	def self.access_followers(u_id)
-		$redis.smembers("user:#{u_id}:followers")
-	end
+	# def self.access_followings(u_id)
+	# 	$redis.smembers("user:#{u_id}:followings")
+	# end
+	# #access the ids of all the people that follow the person with the given id (u_id)
+	# def self.access_followers(u_id)
+	# 	$redis.smembers("user:#{u_id}:followers")
+	# end
 
 	
 
 
-	def self.access_tag(name)
-		$redis.lrange("tag:#{name}", 0, -1)
-	end
+	# def self.access_tag(name)
+	# 	$redis.lrange("tag:#{name}", 0, -1)
+	# end
 
 
-	def self.access_replies(tweet_id)
-		$redis.lrange("tweet:#{tweet_id}:replies", 0, -1)
-	end
+	# def self.access_replies(tweet_id)
+	# 	$redis.lrange("tweet:#{tweet_id}:replies", 0, -1)
+	# end
 
-	def self.access_likes(tweet_id)
-		$redis.smembers("tweet:#{tweet_id}:likes")
-	end
+	# def self.access_likes(tweet_id)
+	# 	$redis.smembers("tweet:#{tweet_id}:likes")
+	# end
 
 
 
