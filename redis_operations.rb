@@ -27,11 +27,11 @@ class RedisClass
 		else
 		   $redis.lpush("ffeed", tweet.to_json)
 		end
-		$redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
-		followings = $redis.smembers("user:#{user_id}followings")
-		followings.each do |following|
-			$redis.lpush("user:#{following}:hfeed", tweet.to_json)
-		end
+		# $redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
+		# followings = $redis.smembers("user:#{user_id}followings")
+		# followings.each do |following|
+		# 	$redis.lpush("user:#{following}:hfeed", tweet.to_json)
+		# end
 	end
 	
 	def self.number_of_keys
