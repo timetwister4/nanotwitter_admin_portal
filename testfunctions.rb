@@ -54,7 +54,7 @@ def seed_follows
     else
       diff = (row[1].to_i - row[0].to_i).abs
       row[1].to_i > row[0].to_i ? f_id = user_id + diff : f_id = user_id - diff
-      #Follow.create(follower_id: user_id, followed_id: f_id)
+      Follow.create(follower_id: user_id, followed_id: f_id)
       RedisClass.cache_follow(user_id, f_id)
     end
 
@@ -90,7 +90,7 @@ def seed_tweets
        user_id += increase   
        row_num = row[0].to_i
        user = User.find(user_id)
-    elsif tweets_per_user < 12 
+    elsif tweets_per_user < 5 
       t = Tweet.create(author_id: user_id, author_name: user[:name], text: row[1], created_at: row[2])
       t.save
       tweet = [user[:name], row[1], row[2], t.id]
