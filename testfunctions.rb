@@ -87,12 +87,13 @@ def seed_tweets
     if row_num != row[0].to_i
        increase = row[0].to_i - row_num
        tweets_per_user = 0
-       user_id += increase   
+       user_id += increase
        row_num = row[0].to_i
        user = User.find(user_id)
-    elsif tweets_per_user < 5 
+    elsif tweets_per_user < 5
       t = Tweet.create(author_id: user_id, author_name: user[:name], text: row[1], created_at: row[2])
       t.save
+      user.increment_tweets
       tweet = [user[:name], row[1], row[2], t.id]
       RedisClass.cache_tweet(tweet,user_id,t.id)
       tweets_per_user += 1
