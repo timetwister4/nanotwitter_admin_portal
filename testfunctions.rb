@@ -43,21 +43,20 @@ end
 
 def seed_follows
   user = User.first
-  user_id = user.id
   row_num = 1
   CSV.foreach('./seed_data/follows.csv') do |row|
     if row_num != row[0].to_i
       increase = row[0].to_i - row_num
       user_id += increase
       row_num = row[0].to_i
-      User.find(user_id)
-    else
+      user = User.find(user_id)
+    end
+      user_id = user.id
       diff = (row[1].to_i - row[0].to_i).abs
       row[1].to_i > row[0].to_i ? f_id = user_id + diff : f_id = user_id - diff
       Follow.create(follower_id: user_id, followed_id: f_id)
       user.increment_followings
       User.find(f_id).increment_followers
-      #RedisClass.cache_follow(user_id, f_id)
     end
 
   end
