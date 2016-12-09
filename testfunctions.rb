@@ -57,9 +57,9 @@ def seed_follows
       Follow.create(follower_id: user_id, followed_id: f_id)
       user.increment_followings
       User.find(f_id).increment_followers
-    end
-
   end
+
+end
   # user = User.first
   # start_index = user.id - 1
   # CSV.foreach('./seed_data/follows.csv') do |row|
@@ -77,7 +77,6 @@ def seed_follows
   #   Follow.create(follower_id: row[0].to_i + start_index, followed_id: row[1].to_i + start_index)
   #   RedisClass.cache_follow(user.id, followed_user.id)
 
-end
 
 def seed_tweets
   user = User.first
