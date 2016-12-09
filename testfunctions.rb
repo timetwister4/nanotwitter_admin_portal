@@ -43,6 +43,7 @@ end
 
 def seed_follows
   user = User.first
+  user_id = user.id
   row_num = 1
   CSV.foreach('./seed_data/follows.csv') do |row|
     if row_num != row[0].to_i
@@ -53,6 +54,7 @@ def seed_follows
     end
       user_id = user.id
       diff = (row[1].to_i - row[0].to_i).abs
+      byebug
       row[1].to_i > row[0].to_i ? f_id = user_id + diff : f_id = user_id - diff
       Follow.create(follower_id: user_id, followed_id: f_id)
       user.increment_followings
