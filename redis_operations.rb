@@ -3,21 +3,11 @@ require 'sinatra'
 require 'sinatra/activerecord'
 require_relative 'models/user.rb'
 require_relative 'models/tweet.rb'
+require_relative 'models/follow.rb'
 require 'json'
 require 'byebug'
 
 class RedisClass
-
-	def self.cache_follow(follower_id, person_followed)
-		$redis.sadd("user:#{follower_id}:followings", person_followed)
-		$redis.sadd("user:#{person_followed}:followers", follower_id)
-	end
-
-	# def self.cache_unfollow(follower_id, person_unfollowed)
-	# 	$redis.srem("user:#{follower_id}:followings", person_unfollowed)
-	# 	$redis.srem("user:#{person_unfollowed}:followers", user_id)
-	# end
-
 
 	def self.cache_tweet(tweet,user_id, tweet_id)
 		#$redis.sadd("tweet:#{tweet_id}", tweet.to_json)
@@ -27,11 +17,12 @@ class RedisClass
 		else
 		   $redis.lpush("ffeed", tweet.to_json)
 		end
-		# $redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
-		# followings = $redis.smembers("user:#{user_id}followings")
-		# followings.each do |following|
-		# 	$redis.lpush("user:#{following}:hfeed", tweet.to_json)
-		# end
+		$redis.lpush("user:#{user_id}:pfeed", tweet.to_json) #cache tweet for self
+		followers = Follow.where(followed_id: user_id)
+		followers.each do |follow|
+			$redis.lpush("user:#{follow.follower_id}:hfeed", tweet.to_json)
+		end
+
 	end
 	
 	def self.number_of_keys
